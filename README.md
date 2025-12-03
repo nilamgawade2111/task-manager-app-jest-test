@@ -66,3 +66,12 @@ src/
 ### Run the Server
 
 - npm start
+
+### Running Tests
+
+- Running Tests
+
+### Test Environment
+
+- .env.test
+
