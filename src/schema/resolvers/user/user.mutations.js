@@ -1,10 +1,15 @@
 const bcrypt = require('bcryptjs');
 const User = require('../../../models/User');
 const { signToken } = require('../../../utils/auth');
+const { validateRegisterInput, validateLoginInput } = require('../../../utils/validators');
 
 module.exports = {
   register: async (_, { input }) => {
-    const { email, password, name } = input;
+    let { email, password, name } = validateRegisterInput(
+      input.email,
+      input.password,
+      input.name
+    );
     const exists = await User.findOne({ email });
     if (exists) throw new Error('Email already in use');
 
@@ -19,6 +24,7 @@ module.exports = {
   },
 
   login: async (_, { email, password }) => {
+    ({ email, password } = validateLoginInput(email, password));
     const user = await User.findOne({ email });
     if (!user) throw new Error('No user found');
     const ok = await bcrypt.compare(password, user.password);

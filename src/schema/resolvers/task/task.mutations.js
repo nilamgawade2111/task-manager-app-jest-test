@@ -1,9 +1,15 @@
 const Task = require('../../../models/Task');
 const { ensureAuth } = require('../../../utils/auth');
+const {
+  validateObjectId,
+  validateTaskInput,
+  validateStatus
+} = require('../../../utils/validators');
 
 module.exports = {
   createTask: async (_, { input }, ctx) => {
-    ensureAuth(ctx);
+      ensureAuth(ctx);
+      validateTaskInput(input);
 
     const task = await Task.create({
       title: input.title,
@@ -17,6 +23,8 @@ module.exports = {
 
   updateTask: async (_, { id, input }, ctx) => {
     ensureAuth(ctx);
+    validateObjectId(id);
+    validateTaskInput(input);
 
     const task = await Task.findById(id);
     if (!task) throw new Error('Task not found');
@@ -32,6 +40,8 @@ module.exports = {
 
   changeTaskStatus: async (_, { id, status }, ctx) => {
     ensureAuth(ctx);
+    validateObjectId(id);
+    validateStatus(status);
 
     const task = await Task.findById(id);
     if (!task) throw new Error('Task not found');
@@ -51,6 +61,7 @@ module.exports = {
 
   deleteTask: async (_, { id }, ctx) => {
     ensureAuth(ctx);
+    validateObjectId(id);
 
     const task = await Task.findById(id);
     if (!task) throw new Error('Task not found');
@@ -65,6 +76,8 @@ module.exports = {
 
   assignTask: async (_, { id, userId }, ctx) => {
     ensureAuth(ctx);
+    validateObjectId(id);
+    validateObjectId(userId, "userId");
 
     const task = await Task.findById(id);
     if (!task) throw new Error('Task not found');

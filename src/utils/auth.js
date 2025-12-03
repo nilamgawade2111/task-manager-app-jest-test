@@ -8,15 +8,18 @@ function signToken(user) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.TOKEN_EXPIRY || '7d' });
 }
 
-// get user from auth header (context helper)
-async function getUserFromToken(token) {
-  if (!token) return null;
+async function getUserFromToken(header) {
+  if (!header) return null;
   try {
-    const cleaned = token.replace('Bearer ', '');
-    const payload = jwt.verify(cleaned, JWT_SECRET);
-    const user = await User.findById(payload.sub).select('-password');
-    return user ? { id: user._id.toString(), role: user.role, email: user.email, name: user.name } : null;
-  } catch (err) {
+    const cleaned = header.replace(/^Bearer\s+/i, '');
+    const payload = jwt.verify(cleaned, process.env.JWT_SECRET);
+    // payload.sub or id — choose what you signed
+    const userId = payload.sub || payload.id || payload._id;
+    if (!userId) return null;
+    const user = await User.findById(userId).select('-password');
+    if (!user) return null;
+    return { id: user._id.toString(), role: user.role, email: user.email, name: user.name };
+  } catch (e) {
     return null;
   }
 }
